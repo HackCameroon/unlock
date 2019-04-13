@@ -58,11 +58,11 @@ io.on('connection', (socket) => {
         destinLng = info.destination.longitude;
 
         /***** Emit the uber information back to the user *****/
-        io.to(`${socketId}`).emit('uber', {
-          startLat: pickupLat,
+        io.to(`${socket.id}`).emit('uber', {
+          startLat: pickUpLat,
           startLng: pickUpLng,
-          endLat: endLat,
-          endLng: endLng
+          endLat: destinLat,
+          endLng: destinLng
         });
         console.log('Request Made to Uber');
       }
