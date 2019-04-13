@@ -67,8 +67,8 @@ io.on('connection', (socket) => {
 
         io.to(`${socket.id}`).emit('update', {
           coordinate: {
-            latitude: 34.0557356,
-            longitude: -118.2369243
+            latitude: 34.0522,
+            longitude: -118.2437
           }
         });
 
