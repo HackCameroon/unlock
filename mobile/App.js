@@ -1,7 +1,7 @@
 import React from "react";
 import {StyleSheet, Text, View, Button, Dimensions} from "react-native";
 import SocketIOClient from 'socket.io-client';
-import MapView from 'react-native-maps';
+import MapView, {Marker} from 'react-native-maps';
 import Polyline from '@mapbox/polyline';
 
 const connectionConfig = {
@@ -33,17 +33,55 @@ export default class App extends React.Component {
     });
 
     this.socket.on('uber', (data) => {
-      console.log(data);
       this.getDirections(`${data.startLat}, ${data.startLng}`, `${data.endLat}, ${data.endLng}`);
     });
+
+    this.socket.on('update', (data) => {
+      console.log(data);
+      let coordinates = data.coordinate;
+      this.setState({
+        marker:
+          {
+            coords: coordinates,
+            title: "Driver: ",
+            description: "You're here!"
+          },
+        coords: this.state.coords
+      })
+    })
 
     this.getDirections = this.getDirections.bind(this);
     this.callUber = this.callUber.bind(this);
     this.unlockCar = this.unlockCar.bind(this);
 
     this.state = {
-      coords: []
-    };
+      coords: [],
+      marker: {
+        coords: {
+          latitude: 0,
+          longitude: 0
+        },
+        title: "Wait",
+        description: "For It"
+      }
+    }
+
+    navigator.geolocation.getCurrentPosition((position) => {
+      var lat = parseFloat(position.coords.latitude)
+      var long = parseFloat(position.coords.longitude)
+
+      this.setState({
+        coords: [],
+        marker: {
+          coords: {
+            latitude: lat,
+            longitude: long
+          },
+          title: "You!",
+          description: "You are here"
+        }
+      });
+    });
   }
 
   async getDirections(startLoc, destinationLoc) {
@@ -59,7 +97,10 @@ export default class App extends React.Component {
             }
         })
 
-        this.setState({coords: coords})
+        this.setState({
+          marker: this.state.marker,
+          coords: coords
+        })
         return coords
     } catch(error) {
         alert(error);
@@ -84,6 +125,12 @@ export default class App extends React.Component {
           latitudeDelta: 0.0922,
           longitudeDelta: 0.0421
         }}>
+
+        <MapView.Marker
+            coordinate={this.state.marker.coords}
+            title={this.state.marker.title}
+            description={this.state.marker.description}
+         />
 
         <MapView.Polyline
           coordinates={this.state.coords}

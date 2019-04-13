@@ -64,6 +64,14 @@ io.on('connection', (socket) => {
           endLat: destinLat,
           endLng: destinLng
         });
+
+        io.to(`${socket.id}`).emit('update', {
+          coordinate: {
+            latitude: 34.0557356,
+            longitude: -118.2369243
+          }
+        });
+
         console.log('Request Made to Uber');
       }
       else {
