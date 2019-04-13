@@ -19,7 +19,11 @@ export default class App extends React.Component {
          console.log('connected to server');
     });
     this.callUber = this.callUber.bind(this);
-    //this.socket = SocketIOClient('http://localhost:4000');
+    this.unlockCar = this.unlockCar.bind(this);
+  }
+
+  unlockCar() {
+    this.socket.emit('unlock');
   }
 
   callUber() {
@@ -39,6 +43,19 @@ export default class App extends React.Component {
             }}
         >
         </MapView>
+        <View
+          style={{
+            position: 'absolute',
+            top: '20%',
+            alignSelf: 'center'
+            }}
+        >
+          <Button
+          onPress={this.unlockCar}
+          title="Unlock Car"
+          color="#841584"
+          accessibilityLabel="Learn more about this purple button"/>
+        </View>
         <View
           style={{
             position: 'absolute',
