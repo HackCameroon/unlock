@@ -1,0 +1,25 @@
+{
+  "expo": {
+    "name": "uberSecurity",
+    "icon": "./hacksc2.png",
+    "version": "1.0.0",
+    "slug": "hackSCProject",
+    "sdkVersion": "32.0.0",
+
+    "ios": {
+      "bundleIdentifier": "com.hackscproject.uberSecurity",
+      "config": {
+        "googleMapsApiKey": "AIzaSyBFb-ijeIhz4nmGHusKruKaizPOYDsVipU"
+      }
+    },
+
+   "android": {
+      "package": "com.hackscproject.uberSecurity",
+      "config": {
+        "googleMaps": { "apiKey": "AIzaSyBzyTzWDdfwSyerb2btMAuu4eXV6Z05jPs" }
+     
+      }
+    }
+  }
+}
+
