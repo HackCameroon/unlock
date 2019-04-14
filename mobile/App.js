@@ -209,7 +209,7 @@ const connectionConfig = {
 export default class App extends React.Component {
   constructor(props) {
     super(props);
-    this.socket = SocketIOClient('http://ba782fa2.ngrok.io');
+    this.socket = SocketIOClient('http://d2ed6f84.ngrok.io');
     this.socket.on('connect', () => {
          console.log('connected to server');
     });
@@ -264,7 +264,7 @@ export default class App extends React.Component {
       console.log(data);
       let coordinates = data.coords;
       let min = data.minimum;
-      if(min >= 1000 && !this.alertPresent) {
+      if(min >= 1600 && !this.alertPresent) {
         this.alertPresent = true;
         Alert.alert(
           'The Uber Driver is off course',
@@ -277,7 +277,7 @@ export default class App extends React.Component {
               }
             },
             {
-              text: "I'm okay",
+              text: "I'm okay.",
               onPress: () => {
                 this.alertPresent = false;
               },

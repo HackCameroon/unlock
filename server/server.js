@@ -139,6 +139,18 @@ io.on('connection', (socket) => {
       io.to(`${socket.id}`).emit('notregistered');
       return;
     }
+    if(smartCarClient.testMode) {
+      io.to(`${socket.id}`).emit('update', {
+
+        coords: {
+          latitude: '34.044737',
+          longitude: '-118.3530781'
+        },
+        minimum: 0
+      })
+    }
+
+    let index = 1;
     updateLocation[socket.id] = setInterval(
       () => {
         vehicle.location().then(function(response) {
@@ -148,27 +160,44 @@ io.on('connection', (socket) => {
           /* Change response to be a random coordinate in LA if in test Mode */
           if(smartCarClient.testMode) {
 
-            let array = [{
-              latitude: '34.0658762',
-              longitude: '-118.2724314'
+            let array = [
+            {
+              latitude: '34.044737',
+              longitude: '-118.3530781'
+            },
+             {
+              latitude: '34.034577',
+              longitude: '-118.343220'
              },
              {
-              latitude: '34.060710',
-              longitude: '-118.249869'
+              latitude: '34.034935',
+              longitude: '-118.335896'
              },
              {
-              latitude: '34.054021',
-              longitude: '-118.260433'
+              latitude: '34.035271',
+              longitude: '-118.328255'
              },
              {
-              latitude: '34.042162',
-              longitude: '-118.238593'
+              latitude: '34.036700',
+              longitude: '-118.317094'
              },
              {
-              latitude: '34.055183',
-              longitude: '-118.274671'
-             }]
-            response = array[Math.floor(Math.random()*array.length)];
+              latitude: '34.037021',
+              longitude: '-118.300207'
+             },
+             {
+              latitude: '34.025721',
+              longitude: '-118.300111'
+             },
+             {
+              latitude: '34.010932',
+              longitude: '-118.300043'
+             }
+
+
+            ]
+             index = (index + 1) % array.length;
+            response = array[index];
           }
 
 
@@ -181,7 +210,7 @@ io.on('connection', (socket) => {
             minimum: lineDecoding(response.latitude, response.longitude)
           })
         });
-      }, 10000);
+      }, 5000);
   });
 
 });
