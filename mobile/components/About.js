@@ -1,5 +1,6 @@
 import React from "react";
-import {Animated, Alert, StyleSheet, View, Dimensions, YellowBox} from "react-native";
+import {Animated, Alert, StyleSheet, View, Dimensions, YellowBox, Image, Easing} from "react-native";
+import { Text} from 'react-native-elements';
 
 const styles = StyleSheet.create({
  slideView: {
@@ -11,7 +12,9 @@ const styles = StyleSheet.create({
    bottom: 0,
    width: Dimensions.get('window').width,
    height: Dimensions.get('window').height,
-   backgroundColor: 'white'
+   backgroundColor: 'white',
+   justifyContent: 'center',
+   alignItems: 'center'
  }
 });
 
@@ -23,7 +26,9 @@ export class About extends React.Component {
     };
 
     slide = () => {
-      Animated.spring(this.state.x, {
+      Animated.timing(this.state.x, {
+        duration: 1000,
+        easing: Easing.back(),
         toValue: 0,
       }).start();
       this.setState({
@@ -32,7 +37,8 @@ export class About extends React.Component {
     };
 
     unslide = () => {
-      Animated.spring(this.state.x, {
+      Animated.timing(this.state.x, {
+        duration: 1000,
         toValue: 500,
       }).start();
       this.setState({
@@ -67,7 +73,43 @@ export class About extends React.Component {
               ]
             }]}
           >
-            {/* your content, such as this.props.children */}
+          <Image
+            style={{
+              width: 200,
+              height: 200,
+              borderRadius: 100,
+              borderColor: '#111E6C',
+              borderWidth: 4
+            }}
+            source={{uri: this.props.url}}/>
+            <Text
+            style={{
+              color: '#111E6C',
+              fontSize: 40,
+            }}>
+              {this.props.header}
+            </Text>
+            <Text
+            style={{
+              color: '#242424',
+              fontSize: 25,
+            }}>
+              {this.props.text1}
+            </Text>
+            <Text
+            style={{
+              color: '#242424',
+              fontSize: 25,
+            }}>
+              {this.props.text2}
+            </Text>
+            <Text
+            style={{
+              color: '#242424',
+              fontSize: 25,
+            }}>
+              {this.props.text3}
+            </Text>
           </Animated.View>
         </View>
       );

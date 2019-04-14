@@ -9,6 +9,9 @@ const socket = require('socket.io');
 const smartcar = require('smartcar');
 const polyline = require('polyline');
 const geolib = require('geolib');
+const accountSid = config.accountSid;
+const authToken = config.authToken;
+const twilio = require('twilio')(accountSid, authToken);
 
 const app = express();
 const port = 3000;
@@ -108,8 +111,27 @@ io.on('connection', (socket) => {
     console.log('vehicle should unlock');
     clearInterval(updateLocation[socket.id]);
     vehicle.unlock();
-  })
-;
+  });
+
+  socket.on('twilio', async(data) => {
+    twilio.calls
+          .create({
+             url: 'http://demo.twilio.com/docs/voice.xml',
+             to: '+17147259338',
+             from: '+19495367402'
+           })
+          .then(call => console.log(call.sid));
+
+    twilio.messages
+      .create({
+         body: `Zirui is in danger at ${data.lt}, ${data.lg}!`,
+         to: '+17147259338',
+         from: '+19495367402'
+       })
+      .then(message => console.log(message.sid));
+  });
+
+
   socket.on('line', (data) => {
     console.log(data);
     line = data.line;

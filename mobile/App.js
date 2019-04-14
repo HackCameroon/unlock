@@ -9,9 +9,10 @@ import {About} from './components/About.js';
 
 const marker = require('./assets/marker.png')
 
-YellowBox.ignoreWarnings([
-    'Unrecognized WebSocket connection option(s) `agent`, `perMessageDeflate`, `pfx`, `key`, `passphrase`, `cert`, `ca`, `ciphers`, `rejectUnauthorized`. Did you mean to put these under `headers`?'
-]);
+let lat;
+let long;
+
+console.disableYellowBox = true;
 
 const connectionConfig = {
   jsonp: false,
@@ -214,6 +215,20 @@ export default class App extends React.Component {
     });
 
     this.socket.on('uber', (data) => {
+      this.setState({
+        minimum: this.state.minimum,
+        marker: this.state.marker,
+        coords: this.state.coords,
+        slideState : this.state.slideState,
+        slideState2 : this.state.slideState2,
+        info: {
+          image: data.image,
+          name: data.name,
+          phone: data.phone,
+          model: data.model,
+          license: data.license
+        }
+      })
       this.getDirections(`${data.startLat}, ${data.startLng}`, `${data.endLat}, ${data.endLng}`);
     });
 
@@ -272,6 +287,8 @@ export default class App extends React.Component {
           {cancelable: false},
         );
       }
+      lat = coordinates.latitude;
+      longitude = coordinates.longitude;
       this.setState({
         minimum: min,
         marker:
@@ -284,14 +301,18 @@ export default class App extends React.Component {
             description: "You're here!"
           },
         coords: this.state.coords,
-        slideState : this.state.slideState
+        slideState : this.state.slideState,
+        slideState2 : this.state.slideState2,
+        info: this.state.info
       })
     })
 
     this.getDirections = this.getDirections.bind(this);
     this.toggleSlide = this.toggleSlide.bind(this);
+    this.toggleSlide2 = this.toggleSlide2.bind(this);
     this.callUber = this.callUber.bind(this);
     this.unlockCar = this.unlockCar.bind(this);
+    this.alertCops = this.alertCops.bind(this);
 
     this.state = {
       minimum: 0,
@@ -304,12 +325,20 @@ export default class App extends React.Component {
         title: "Wait",
         description: "For It"
       },
-      slideState : false
+      slideState : false,
+      slideState2 : false,
+      info: {
+        image: "",
+        name: "Driver's Name",
+        phone: 'Phone Number',
+        model: 'Model / Make',
+        license: 'License Plate'
+      }
     }
 
     navigator.geolocation.getCurrentPosition((position) => {
-      let lat = parseFloat(position.coords.latitude)
-      let long = parseFloat(position.coords.longitude)
+      lat = parseFloat(position.coords.latitude)
+      long = parseFloat(position.coords.longitude)
 
       this.setState({
         minimum: 0,
@@ -322,20 +351,58 @@ export default class App extends React.Component {
           title: "You!",
           description: "You are here"
         },
-        slideState : this.state.slideState
+        slideState : this.state.slideState,
+        slideState2 : this.state.slideState2,
+        info: this.state.info
       });
     });
   }
 
   toggleSlide() {
-    console.log('ok');
     this.setState({
       minimum: this.state.minimum,
       marker: this.state.marker,
       coords: this.state.coords,
-      slideState : !this.state.slideState
+      slideState : !this.state.slideState,
+      slideState2 : this.state.slideState2,
+      info: this.state.info
     })
-    console.log(this.state);
+  }
+
+  toggleSlide2() {
+    this.setState({
+      minimum: this.state.minimum,
+      marker: this.state.marker,
+      coords: this.state.coords,
+      slideState : this.state.slideState,
+      slideState2 : !this.state.slideState2,
+      info: this.state.info
+    })
+  }
+
+  alertCops() {
+    Alert.alert(
+      'We can call the cops!',
+      'Would you like that? Please confirm.',
+      [
+        { text: 'Call the cops!',
+          onPress: () => {
+            this.socket.emit('twilio', {
+              lt: lat,
+              lg: long
+            });
+          }
+        },
+        {
+          text: "Cancel",
+          onPress: () => {
+          },
+          style: 'cancel'
+        }
+      ],
+      {cancelable: false},
+    );
+
   }
 
   async getDirections(startLoc, destinationLoc) {
@@ -359,7 +426,9 @@ export default class App extends React.Component {
           minimum: this.state.minimum,
           marker: this.state.marker,
           coords: coords,
-          slideState : this.state.slideState
+          slideState : this.state.slideState,
+          slideState2 : this.state.slideState2,
+          info: this.state.info
         })
         return coords
     } catch(error) {
@@ -383,7 +452,7 @@ export default class App extends React.Component {
         style={{
           position: 'absolute',
           zIndex: 1000,
-          top: 60,
+          top: 80,
           right: 20,
           borderWidth: 0,
           shadowOffset:{  width: 0,  height: 2},
@@ -394,16 +463,24 @@ export default class App extends React.Component {
       >
         <Icon
           style={{ margin: 0 }}
-          name="ios-add"
+          name="ios-person"
           color="#111E6C"
-          size={80}
+          size={50}
           onPress={this.toggleSlide}
+        />
+        <Icon
+          style={{ margin: 0 }}
+          name="ios-car"
+          color="#111E6C"
+          size={50}
+          onPress={this.toggleSlide2}
         />
         <Icon
           style={{ margin: 0 }}
           name="ios-megaphone"
           color="#111E6C"
           size={50}
+          onPress={this.alertCops}
         />
       </View>
         <MapView style={styles.map}
@@ -470,7 +547,23 @@ export default class App extends React.Component {
           buttonStyle={styles.button}
           accessibilityLabel="Learn more about this purple button"/>
         </View>
-        <About slide={this.state.slideState}>
+        <About
+          slide={this.state.slideState}
+          url={'https://i.imgur.com/b0hbcmE.jpg'}
+          header={'Zirui Wang'}
+          text1={'(123) 456-7890'}
+          text2={'7652 Palmilla Drive'}
+          text3={'San Diego, CA'}
+          >
+        </About>
+        <About
+          slide={this.state.slideState2}
+          url={this.state.info.image}
+          header={this.state.info.name}
+          text1={this.state.info.phone}
+          text2={this.state.info.model}
+          text3={this.state.info.license}
+          >
         </About>
       </View>
     );
