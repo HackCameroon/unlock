@@ -7,6 +7,8 @@ const request = require('request');
 const http = require('http')
 const socket = require('socket.io');
 const smartcar = require('smartcar');
+const polyline = require('polyline');
+const geolib = require('geolib');
 
 const app = express();
 const port = 3000;
@@ -30,17 +32,19 @@ let smartCarClient = new smartcar.AuthClient({
   clientSecret: process.env.CLIENT_SECRET || config.clientSecret,
   redirectUri: process.env.REDIRECT_URI || config.redirectUri,
   scope: ['read_vehicle_info', 'control_security', 'read_location'],
-  testMode: false,
+  testMode: true,
 });
 
 // global variable to save our accessToken
 let access;
 let vehicle;
+let updateLocation = {};
 
 let pickupLat;
 let pickupLng;
 let destinLat;
 let destinLng;
+let line;
 
 /***** A phone is connected to the server *****/
 io.on('connection', (socket) => {
@@ -65,16 +69,10 @@ io.on('connection', (socket) => {
           endLng: destinLng
         });
 
-        io.to(`${socket.id}`).emit('update', {
-          coordinate: {
-            latitude: 34.0522,
-            longitude: -118.2437
-          }
-        });
-
         console.log('Request Made to Uber');
       }
       else {
+        io.to(`${socket.id}`).emit('notriding');
         console.log('Failed to make a request to Uber');
       }
     });
@@ -82,10 +80,80 @@ io.on('connection', (socket) => {
 
   socket.on('unlock', async() => {
     console.log('vehicle should unlock');
+    clearInterval(updateLocation[socket.id]);
     vehicle.unlock();
   })
+;
+  socket.on('line', (data) => {
+    console.log(data);
+    line = data.line;
+    if(! vehicle){
+      io.to(`${socket.id}`).emit('notregistered');
+      return;
+    }
+    updateLocation[socket.id] = setInterval(
+      () => {
+        vehicle.location().then(function(response) {
+          console.log(response);
+          response = response.data;
+
+          /* Change response to be a random coordinate in LA if in test Mode */
+          if(smartCarClient.testMode) {
+
+            let array = [{
+              latitude: '34.0658762',
+              longitude: '-118.2724314'
+             },
+             {
+              latitude: '34.060710',
+              longitude: '-118.249869'
+             },
+             {
+              latitude: '34.054021',
+              longitude: '-118.260433'
+             },
+             {
+              latitude: '34.042162',
+              longitude: '-118.238593'
+             },
+             {
+              latitude: '34.055183',
+              longitude: '-118.274671'
+             }]
+            response = array[Math.floor(Math.random()*array.length)];
+          }
+
+
+          io.to(`${socket.id}`).emit('update', {
+
+            coords: {
+              latitude: response.latitude,
+              longitude: response.longitude
+            },
+            minimum: lineDecoding(response.latitude, response.longitude)
+          })
+        });
+      }, 10000);
+  });
 
 });
+
+let lineDecoding = (lat, lng) => {
+
+  let waypoints = polyline.decode(line);
+  //console.log(waypoints);
+
+  let minimum = Number.MAX_SAFE_INTEGER;
+
+  waypoints.forEach((waypoint) => {
+    minimum = Math.min(minimum, geolib.getDistance(
+      {latitude: lat, longitude: lng},
+      {latitude: waypoint[0], longitude: waypoint[1]}
+    ));
+  });
+
+  return minimum;
+}
 
 // Redirect to Smartcar's authentication flow
 app.get('/login', function(req, res) {
