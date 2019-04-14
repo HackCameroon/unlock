@@ -44,6 +44,11 @@ let pickupLat;
 let pickupLng;
 let destinLat;
 let destinLng;
+let aimage;
+let aname;
+let aphone;
+let amodel;
+let alicense;
 let line;
 
 /***** A phone is connected to the server *****/
@@ -56,17 +61,38 @@ io.on('connection', (socket) => {
     request(uberOptions, function (error, response, body) {
       if (!error && response.statusCode == 200) {
         var info = JSON.parse(body);
+        console.log('HERE WE GO');
+        console.log(info);
         pickUpLat = info.pickup.latitude;
         pickUpLng = info.pickup.longitude;
         destinLat = info.destination.latitude;
         destinLng = info.destination.longitude;
+        if(info.driver && info.vehicle) {
+        aimage = info.driver.picture_url || "https://i.imgur.com/pmEbZgA.jpg";
+        aname = info.driver.name || "Iuriz Gnaw";
+        aphone = info.driver.phone_number ||  '(987) 654-3210';
+        amodel = (info.vehicle.model + info.vehicle.make) ||  'Tesla Model S';
+        alicense = info.vehicle.license || 'IK1DN4PU';
+        }
+        else {
+          aimage ="https://i.imgur.com/pmEbZgA.jpg";
+          aname = "Iuriz Gnaw";
+          aphone = '(987) 654-3210';
+          amodel = 'Tesla Model S';
+          alicense = 'IK1DN4PU';
+        }
 
         /***** Emit the uber information back to the user *****/
         io.to(`${socket.id}`).emit('uber', {
           startLat: pickUpLat,
           startLng: pickUpLng,
           endLat: destinLat,
-          endLng: destinLng
+          endLng: destinLng,
+          image: aimage,
+          name: aname,
+          phone: aphone,
+          model: amodel,
+          license: alicense
         });
 
         console.log('Request Made to Uber');
